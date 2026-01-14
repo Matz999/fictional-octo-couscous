@@ -1,0 +1,97 @@
+#city-popup {
+  background: #fff;
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+#popup-img {
+  max-width: 500px;
+  max-height: 500px;
+  display: block;
+  margin: 0;
+  border: none;
+}
+
+#text-popup {
+  width: 300px;
+  padding: 20px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.5;
+  position: fixed;
+  top: 50%;
+  right: 10px;
+  border-style: solid;
+  transform: translateY(-50%);
+  background: #fff;
+  display: none;
+  z-index: 1001;
+}
+#aboutCanvas {
+    z-index: 1000;
+}
+/* Ensure h1.cities are interactive and above canvas */
+h1.cities {
+  pointer-events: auto;
+    font-family: Helvetica, Arial, sans-serif;
+
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+h1.cities:hover {
+  cursor: pointer;
+  color: #0077ff;
+}
+canvas {
+  z-index: 1;
+
+  
+  pointer-events: none;
+}
+#mainCanvas {
+    z-index: 1000;
+}
+body {
+  position: relative;
+  min-height: 100vh;
+}
+/* Modern minimal style for logo and about buttons */
+a.logo, a.about, a.projects, a.agenda, a.contact {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #222;
+  background: none;
+  border: none;
+  padding: 0.5em 1.2em;
+  margin: 1em 0.5em;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+}
+a.logo:hover, a.about:hover, a.projects:hover, a.agenda:hover, a.contact:hover {
+  z-index: 10;
+  color: #0077ff;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+}
+canvas {
+  z-index: 1000;
+  display: block;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+}

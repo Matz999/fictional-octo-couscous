@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Full Window Canvas Animation</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+      }
+      canvas {
+        display: block;
+        position: fixed;
+
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="home">LOGO</a>
+    <a href="about">ABOUT</a>
+    <canvas id="mainCanvas"></canvas>
+    <div id="scrollArea" style="height: 5000px"></div>
+    <script>
+      const canvas = document.getElementById("mainCanvas");
+      const ctx = canvas.getContext("2d");
+
+      function resizeCanvas() {
+        canvas.width = 3840;
+        canvas.height = 2160;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      // Grid settings
+      const pointSpacing = 70;
+      let gridCols, gridRows;
+      let points = [];
+      let userInput = "";
+      // Random phrases state
+      const phrases = [
+        "Hello!",
+        "(づ๑•ᴗ•๑)づ♡",
+        "Canvas",
+        "Grid",
+        "Animation",
+        "Welcome",
+        "PointWall",
+        "Enjoy!",
+        "Random",
+        "Phrase",
+      ];
+
+      const h1 = ["We are studioMakers: A brand made by makers, for makers."];
+      let activePhrases = [];
+      const phraseDuration = 2000; // ms
+      const phraseInterval = 1500; // ms
+      const phraseTypeDelay = 120; // ms per letter
+
+      // Each phrase is { indices: [grid indices], text: phrase, timeout: setTimeout }
+      // Headline state
+      let showHeadline = true;
+      let headlineObj = null;
+
+      function updateGrid() {
+        // Setup headline phrase occupying first N points
+        if (h1.length) {
+          const headline = h1[0];
+          const indices = [];
+          for (let i = 0; i < headline.length && i < points.length; i++) {
+            indices.push(i);
+          }
+          headlineObj = {
+            indices,
+            text: headline,
+            visibleCount: headline.length, // always fully visible
+          };
+        }
+        gridCols = Math.floor(canvas.width / pointSpacing);
+        gridRows = Math.floor(canvas.height / pointSpacing);
+        points = [];
+        for (let row = 0; row < gridRows; row++) {
+          for (let col = 0; col < gridCols; col++) {
+            points.push({
+              x: col * pointSpacing + pointSpacing / 2,
+              y: row * pointSpacing + pointSpacing / 2,
+            });
+          }
+        }
+      }
+
+      function drawGrid() {
+        // Blue background
+        ctx.fillStyle = "#3498db";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "60px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        // Draw headline as grid phrase if enabled
+        for (let i = 0; i < points.length; i++) {
+          const pt = points[i];
+          let phraseLetter = null;
+          // Headline takes priority
+          if (showHeadline && headlineObj && headlineObj.indices.includes(i)) {
+            const idx = headlineObj.indices.indexOf(i);
+            if (headlineObj.visibleCount > idx) {
+              phraseLetter = headlineObj.text[idx];
+              ctx.save();
+              ctx.fillStyle = "#fff";
+              ctx.font = "bold 60px monospace";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(phraseLetter, pt.x, pt.y);
+              ctx.restore();
+              continue;
+            }
+          }
+          // Other phrases
+          for (const phraseObj of activePhrases) {
+            const idx = phraseObj.indices.indexOf(i);
+            if (idx !== -1 && phraseObj.visibleCount > idx) {
+              phraseLetter = phraseObj.text[idx];
+              break;
+            }
+          }
+          if (phraseLetter) {
+            ctx.save();
+            ctx.fillStyle = "white";
+            ctx.font = "bold 60px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(phraseLetter, pt.x, pt.y);
+            ctx.restore();
+          } else if (userInput[i]) {
+            ctx.fillText(userInput[i], pt.x, pt.y);
+          } else {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+          }
+        }
+        // ...existing code...
+      }
+      // ...existing code...
+      // Track scroll position and assign scrollRow
+      let scrollRow = 0;
+      window.addEventListener("scroll", () => {
+        scrollRow = Math.floor(window.scrollY / pointSpacing);
+      });
+
+      function animate() {
+        drawGrid();
+        requestAnimationFrame(animate);
+      }
+
+      // Random phrase logic
+      function showRandomPhrase() {
+        if (!points.length) return;
+        // Pick a random phrase
+        const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+        // Find used indices for the phrase
+        const usedIndices = [
+          ...activePhrases.flatMap((p) => p.indices),
+          ...userInput.split("").map((_, i) => i),
+        ];
+        const available = points
+          .map((_, i) => i)
+          .filter((i) => !usedIndices.includes(i));
+        if (available.length < phrase.length) return; // not enough space
+        // Pick a random start index
+        const startIdx =
+          available[
+            Math.floor(Math.random() * (available.length - phrase.length + 1))
+          ];
+        // Find consecutive available indices
+        let indices = [];
+        for (
+          let i = startIdx, j = 0;
+          j < phrase.length && i < points.length;
+          i++
+        ) {
+          if (available.includes(i)) {
+            indices.push(i);
+            j++;
+          } else {
+            // If not enough consecutive, try again
+            indices = [];
+            break;
+          }
+        }
+        if (indices.length !== phrase.length) return;
+        // Add phrase with typing animation
+        let phraseObj = {
+          indices,
+          text: phrase,
+          visibleCount: 0,
+          timeout: null,
+          typeInterval: null,
+        };
+        // Animate typing
+        phraseObj.typeInterval = setInterval(() => {
+          phraseObj.visibleCount++;
+          if (phraseObj.visibleCount >= phrase.length) {
+            clearInterval(phraseObj.typeInterval);
+            // Remove after phraseDuration
+            phraseObj.timeout = setTimeout(() => {
+              activePhrases = activePhrases.filter((p) => p !== phraseObj);
+            }, phraseDuration);
+          }
+        }, phraseTypeDelay);
+        activePhrases.push(phraseObj);
+      }
+
+      setInterval(showRandomPhrase, phraseInterval);
+
+      // Handle user input
+      window.addEventListener("keydown", (e) => {
+        if (e.key.length === 1) {
+          userInput += e.key;
+        } else if (e.key === "Backspace") {
+          userInput = userInput.slice(0, -1);
+        }
+      });
+
+      // Recalculate grid on resize
+      function onResize() {
+        resizeCanvas();
+        updateGrid();
+      }
+      window.addEventListener("resize", onResize);
+      resizeCanvas();
+      updateGrid();
+      animate();
+    </script>
+  </body>
+</html>

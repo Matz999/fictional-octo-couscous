@@ -1,0 +1,40 @@
+
+#aboutCanvas {
+    z-index: 1000;
+}
+
+
+/* Modern minimal style for logo and about buttons */
+a.logo, a.about, a.projects, a.agenda, a.contact {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #222;
+  background: none;
+  border: none;
+  padding: 0.5em 1.2em;
+  margin: 1em 0.5em;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+}
+a.logo:hover, a.about:hover, a.projects:hover, a.agenda:hover, a.contact:hover {
+  z-index: 10;
+  color: #0077ff;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+}
+canvas {
+  z-index: 1000;
+  display: block;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+}
